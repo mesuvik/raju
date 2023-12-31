@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Fireworks Animation</title>
+    <style>
+        body,
+        canvas {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            background-color:  #2A3C4E;
+            color: #ffffff;
+        }
+
+        h1 {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            z-index: 2;
+            text-align: center;
+            background: -webkit-linear-gradient(180deg, #ff00ff, #00ffff,#3498db, #2ecc71, #e67e22, #e74c3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <h1>Happy New Year 2024!</h1>
+    </div>
+
+    <canvas id="canvas"></canvas>
+    <script>
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function Firework(x, y, color) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+            this.velocity = {
+                x: Math.random() * 6 - 3,
+                y: Math.random() * 6 - 3
+            };
+            this.size = Math.random() * 5 + 1;
+            this.gravity = 0.025;
+            this.opacity = 2;
+        }
+
+        Firework.prototype.update = function () {
+            this.velocity.y += this.gravity;
+            this.x += this.velocity.x;
+            this.y += this.velocity.y;
+            this.opacity -= 0.01;
+        };
+
+        Firework.prototype.draw = function () {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(' + this.color + ', ' + this.opacity + ')';
+            ctx.fill();
+        };
+
+        var fireworks = [];
+
+        function createFirework() {
+            var x = Math.random() * canvas.width;
+            var y = Math.random() * canvas.height / 2;
+            var color = '255, ' + Math.floor(Math.random() * 256) + ', ' + Math.floor(Math.random() * 256);
+            for (var i = 0; i < Math.floor(Math.random() * 6) + 5; i++) {
+                fireworks.push(new Firework(x, y, color));
+            }
+        }
+
+        function drawStar(x, y, radius, numPoints, innerRadius) {
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
+
+            // Generate a random color for each star
+            const randomColor = getRandomColor();
+            gradient.addColorStop(0, randomColor); // Start color
+            gradient.addColorStop(1, 'transparent'); // End color
+
+            ctx.beginPath();
+            const angleStep = (Math.PI * 2) / numPoints;
+
+            for (let i = 0; i < numPoints * 2; i++) {
+                const angle = i * angleStep;
+                const r = i % 2 === 0 ? radius : innerRadius;
+                const pointX = x + Math.cos(angle) * r;
+                const pointY = y + Math.sin(angle) * r;
+                ctx.lineTo(pointX, pointY);
+            }
+
+            ctx.closePath();
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function drawFinalStar(x, y) {
+            const starRadius = 15;
+            const innerRadius = 5;
+            const numPoints = 5;
+
+            drawStar(x, y, starRadius, numPoints, innerRadius);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (var i = 0; i < fireworks.length; i++) {
+                fireworks[i].update();
+                fireworks[i].draw();
+                if (fireworks[i].opacity <= 0) {
+                    drawFinalStar(fireworks[i].x, fireworks[i].y);
+                    fireworks.splice(i, 1);
+                }
+            }
+            if (Math.random() < 0.45) {
+                createFirework();
+            }
+        }
+
+        animate();
+    </script>
+</body>
+
+</html>
